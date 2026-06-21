@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, User, Mail, DollarSign } from "lucide-react";
+import { Clock, User, Mail, DollarSign, CheckCircle } from "lucide-react";
 
 export default function UserHiringHistoryTable({ clientEmail }) {
   console.log("User email received in table:", clientEmail);
@@ -14,7 +14,6 @@ export default function UserHiringHistoryTable({ clientEmail }) {
     if (!clientEmail) return;
 
     setLoading(true);
-    // 💡 আপনার ব্যাকএন্ডের API রুট (কুয়েরি হিসেবে clientEmail পাঠানো হচ্ছে)
     fetch(`http://localhost:5000/hirings?email=${clientEmail}`)
       .then((res) => res.json())
       .then((data) => {
@@ -27,10 +26,36 @@ export default function UserHiringHistoryTable({ clientEmail }) {
       });
   }, [clientEmail]);
 
-  // পেমেন্ট হ্যান্ডলার ফাংশন
-  const handlePayment = (id, fee, lawyerName) => {
-    alert(`Redirecting to Payment Gateway for ${lawyerName}. Amount: $${fee}`);
-    // পরবর্তীতে এখানে আপনি SSLCommerz, Stripe বা bKash গেটওয়ে ইন্টিগ্রেট করতে পারবেন
+  // 💳 ডায়নামিক স্ট্রাইপ চেকআউট হ্যান্ডলার
+  const handleCheckout = async (request) => {
+    try {
+      // ✅ পোর্ট ৫০০০ সহ আপনার এক্সপ্রেস ব্যাকএন্ডের সঠিক এপিআই রুট
+const res = await fetch('http://localhost:5000/api/checkout_sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'legal_fee',               // মডিউল আইডেন্টিফায়ার
+          eventId: request._id,            // হায়ার রিকোয়েস্টের ইউনিক ID
+          eventTitle: request.serviceName || "Lawyer Consultation",
+          quantity: 1,                     // লইয়ার হায়ার সাধারণত ১ সেশন হিসেবে কাউন্ট হয়
+          totalTicketPrice: parseFloat(request.fee), // মেইন অ্যামাউন্ট
+          email: clientEmail               // অ্যাটেন্ডি ইমেইল হিসেবে ইউজারের ইমেইল
+        }),
+      });
+
+      const { url, error } = await res.json();
+
+      if (error) { 
+        console.error("Stripe Error:", error); 
+        alert("Payment Session Failed!");
+        return; 
+      }
+      
+      if (url) window.location.assign(url); // 🚀 স্ট্রাইপ হোস্টেড চেকআউটে রিডাইরেক্ট
+
+    } catch (err) {
+      console.error("Checkout Request Error:", err);
+    }
   };
 
   if (!clientEmail) {
@@ -85,10 +110,10 @@ export default function UserHiringHistoryTable({ clientEmail }) {
                   {/* ফি */}
                   <td className="p-4 font-bold text-gray-900">${request.fee}</td>
 
-                  {/* হায়ার করার তারিখ */}
+                  {/* তারিখ */}
                   <td className="p-4 text-gray-500">{request.date}</td>
 
-                  {/* স্ট্যাটাস ব্যাজ (Pending / Accepted / Rejected) */}
+                  {/* স্ট্যাটাস ব্যাজ */}
                   <td className="p-4">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
                       request.status === "Accepted" ? "bg-emerald-50 text-emerald-700" :
@@ -100,14 +125,20 @@ export default function UserHiringHistoryTable({ clientEmail }) {
                     </span>
                   </td>
 
-                  {/* কন্ডিশনাল পেমেন্ট অ্যাকশন বাটন */}
+                  {/* 🌟 কন্ডিশনাল পেমেন্ট অ্যাকশন বাটন সেকশন */}
                   <td className="p-4 text-right">
-                    {request.status === "Accepted" ? (
+                    {request.paymentStatus === "paid" ? (
+                      // ১. পেমেন্ট অলরেডি সাকসেসফুল হলে বাটন লক থাকবে
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-xs font-bold border border-emerald-200">
+                        <CheckCircle size={14} /> Paid
+                      </span>
+                    ) : request.status === "Accepted" ? (
+                      // ২. লইয়ার একসেপ্ট করেছে কিন্তু পেমেন্ট বাকি, তাই চেকআউট বাটন একটিভ
                       <button
-                        onClick={() => handlePayment(request._id, request.fee, request.serviceName)}
-                        className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md active:scale-95"
+                        onClick={() => handleCheckout(request)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 inline-flex items-center gap-1"
                       >
-                        <DollarSign size={14} /> Pay Now
+                        <DollarSign size={13} /> Checkout
                       </button>
                     ) : request.status === "Pending" ? (
                       <span className="text-xs text-amber-600 font-medium bg-amber-50/50 px-3 py-1.5 rounded-xl border border-amber-100">
