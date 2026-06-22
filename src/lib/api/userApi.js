@@ -25,7 +25,7 @@ export const uploadImageToImgBB = async (file) => {
 // ২. এক্সপ্রেস ব্যাকএন্ডে (Port 5000) প্রোফাইল আপডেট করার ফাংশন
 export const updateUserProfile = async (email, profileData) => {
   try {
-    const res = await fetch(`http://localhost:5000/users/update-profile?email=${email}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/update-profile?email=${email}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

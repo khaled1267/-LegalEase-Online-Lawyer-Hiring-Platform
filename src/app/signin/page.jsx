@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "@/lib/auth-client"; // Better Auth ক্লায়েন্ট মেথড
+import { signIn } from "@/lib/auth-client";
 
 export default function Login() {
   const router = useRouter();

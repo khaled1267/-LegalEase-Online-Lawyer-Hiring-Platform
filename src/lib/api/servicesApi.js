@@ -1,4 +1,4 @@
-const backendUrl = "http://localhost:5000";
+const backendUrl = process.env.NEXT_PUBLIC_API_URL;
 
 // ১. ডাটা লোড করা (Read)
 export const fetchServices = async (lawyerEmail) => {

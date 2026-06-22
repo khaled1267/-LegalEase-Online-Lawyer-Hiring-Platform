@@ -5,7 +5,7 @@ import LinkComponent from "next/link";
 import { User, Mail, Lock, Image as ImageIcon, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signUp } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export default function Register() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function Register() {
   // Google login
   const handleGoogleLogin = async () => {
     try {
-      await signUp.social({
+      await authClient.signUp.social({
         provider: "google",
         callbackURL: "/",
       });
@@ -28,7 +28,6 @@ export default function Register() {
 
   // Register
   const handleRegister = async (e) => {
-
     e.preventDefault();
     // console.log("inside regester the funtion")
     setLoading(true);
@@ -63,21 +62,20 @@ export default function Register() {
     //   setLoading(false);
     //   return;
     // }
-// console.log("inside tryjkvhgjk block");
+    // console.log("inside tryjkvhgjk block");
     try {
       // console.log("inside try block");
-      await signUp.email({
+      await authClient.signUp.email({
         email: registerData.email,
         password,
         name: registerData.name,
         image: registerData.image || undefined,
 
         // 🔥 ROLE HERE (IMPORTANT FIX)
-        role: registerData.role,
+        userRole: registerData.role,
 
         callbackURL: "/",
       });
-      
 
       toast.success("Registration successful! 🎉");
 
@@ -86,11 +84,7 @@ export default function Register() {
     } catch (err) {
       console.error(err);
 
-      toast.error(
-        err?.body?.message ||
-        err?.message ||
-        "Registration failed"
-      );
+      toast.error(err?.body?.message || err?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -100,9 +94,7 @@ export default function Register() {
     <div className="min-h-[85vh] flex flex-col bg-[#F8F9FA] dark:bg-slate-950 py-10">
       <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow">
-
             {/* Title */}
             <div className="text-center mb-8">
               <h2 className="text-3xl font-black">
@@ -121,12 +113,27 @@ export default function Register() {
 
             {/* form */}
             <form onSubmit={handleRegister} className="space-y-4">
+              <input
+                name="name"
+                placeholder="Full Name"
+                className="input"
+                required
+              />
 
-              <input name="name" placeholder="Full Name" className="input" required />
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                className="input"
+                required
+              />
 
-              <input name="email" type="email" placeholder="Email" className="input" required />
-
-              <input name="image" type="url" placeholder="Image URL (optional)" className="input" />
+              <input
+                name="image"
+                type="url"
+                placeholder="Image URL (optional)"
+                className="input"
+              />
 
               {/* Role */}
               <select name="role" className="input" required>
@@ -134,9 +141,21 @@ export default function Register() {
                 <option value="lawyer">Lawyer</option>
               </select>
 
-              <input name="password" type="password" placeholder="Password" className="input" required />
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                className="input"
+                required
+              />
 
-              <input name="confirmPassword" type="password" placeholder="Confirm Password" className="input" required />
+              <input
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm Password"
+                className="input"
+                required
+              />
 
               <button
                 type="submit"
@@ -145,7 +164,6 @@ export default function Register() {
               >
                 {loading ? "Creating..." : "Create Account"}
               </button>
-
             </form>
 
             {/* footer */}
@@ -154,9 +172,7 @@ export default function Register() {
                 Already have account? Sign in
               </LinkComponent>
             </div>
-
           </div>
-
         </div>
       </div>
     </div>

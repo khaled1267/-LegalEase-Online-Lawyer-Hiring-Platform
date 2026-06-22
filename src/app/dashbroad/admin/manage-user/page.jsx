@@ -6,7 +6,7 @@ export default function ManageUsers() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/users")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`)
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error(err));
@@ -19,7 +19,7 @@ export default function ManageUsers() {
     if (!confirmChange) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/users/role/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/role/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: newRole }),
@@ -39,7 +39,7 @@ export default function ManageUsers() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/users/${id}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, { method: "DELETE" });
       if (res.ok) {
         alert("🗑️ User deleted!");
         setUsers(users.filter((u) => u._id !== id));

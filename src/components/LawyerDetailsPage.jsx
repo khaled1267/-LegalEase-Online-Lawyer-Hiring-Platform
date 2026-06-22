@@ -14,7 +14,7 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
   useEffect(() => {
     if (!lawyer?._id) return;
 
-    fetch(`http://localhost:5000/comments?lawyerId=${lawyer._id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments?lawyerId=${lawyer._id}`)
       .then((res) => res.json())
       .then((data) => {
         // নতুন কমেন্টগুলো যেন লিস্টের ওপরে দেখায়, তাই reverse করে সেট করা হলো
@@ -42,7 +42,7 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/hirings", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hirings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(hiringData),
@@ -77,7 +77,7 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/comments", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(commentData),

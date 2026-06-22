@@ -14,7 +14,7 @@ export default async function LawyerDetailsPage({ params: paramsPromise }) {
   // ৩. ব্যাকএন্ড থেকে লইয়ারের ডাটা ফেচ করা
   let lawyer = null;
   try {
-    const res = await fetch(`http://localhost:5000/services/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${id}`, {
       cache: "no-store", // রিয়েল-টাইম ডাটার জন্য ক্যাশ অফ রাখা ভালো
     });
     if (res.ok) {

@@ -13,7 +13,7 @@ export default function UserCommentsTable({ clientEmail, clientName }) {
   useEffect(() => {
     if (!clientEmail) return;
     
-    fetch(`http://localhost:5000/comments/user/${clientEmail}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/user/${clientEmail}`)
       .then((res) => res.json())
       .then((data) => setComments(data.reverse()))
       .catch((err) => console.error("Error loading user comments:", err));
@@ -25,7 +25,7 @@ export default function UserCommentsTable({ clientEmail, clientName }) {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/comments/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${id}`, {
         method: "DELETE",
       });
 
@@ -51,7 +51,7 @@ export default function UserCommentsTable({ clientEmail, clientName }) {
     if (!editText.trim()) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/comments/${editingComment._id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${editingComment._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

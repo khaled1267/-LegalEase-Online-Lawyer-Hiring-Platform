@@ -1,46 +1,59 @@
 import { stripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { metadata } from '@/app/layout'
-import { createScription } from '@/lib/action/scription'
 
 export default async function Success({ searchParams }) {
-  const { session_id } = await searchParams
-console.log(session_id)
+  // ১. searchParams থেকে ডাটা আলাদা করা
+  
+  const { session_id, hiringId } = await searchParams;
+  // success/page.jsx ফাইলের ভেতরে চেক করুন:
+// const searchParams = useSearchParams();
+// const session_id = searchParams.get("session_id"); // 🌟 নিশ্চিত করুন নাম যেন 'session_id' ই হয়, 'sessionId' নয়।
+
   if (!session_id) {
     throw new Error('Please provide a valid session_id (`cs_test_...`)')
   }
 
-  let session;
-  try {
-    
-    session = await stripe.checkout.sessions.retrieve(session_id, {
-      expand: [
-    'payment_intent',       // full PaymentIntent object
-    'line_items',           // what was purchased
-    'customer',             // Stripe Customer object (if applicable)
-    'customer_details',     // name, email, address entered at checkout
-  ]
-    })
-  } catch (error) {
-    console.error("Stripe session retrieve error:", error)
-    throw new Error('Failed to retrieve checkout session.')
-  }
+  // ২. স্ট্রাইপ সেশন একবারই রিট্রিভ করা (expand সহ)
+  const session = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ['line_items', 'payment_intent']
+  });
 
-  // সেশন ওপেন থাকলে হোমপেজে রিডাইরেক্ট (এটি try-catch এর বাইরে রাখা ভালো)
-  if (session.status === 'open') {
+  const { status, metadata, customer_details } = session;
+  const customerEmail = customer_details?.email;
+
+  // 🌟 আইনজীবীর ইমেইলটি মেটাডাটা থেকে নেওয়া (যদি ব্যাকএন্ড থেকে metadata.lawyerEmail পাস করে থাকেন)
+  // অথবা যদি মেটাডাটাতে না পান, আপনার ডাটাবেজ থেকে lawyer email রিড করতে পারেন।
+  const lawyerEmail = metadata?.lawyerEmail || "support@legalease.com"; // default সেফটি ইমেইল
+
+  if (status === 'open') {
     return redirect('/')
   }
 
-  const customerEmail = session.customer_details?.email
+  // 🌟 ডাটাবেজে স্ট্যাটাস আপডেট করার পার্ট
+  const targetId = hiringId || metadata?.eventId;
+if (targetId) {
+  try {
+    // স্ট্রাইপ থেকে টোটাল অ্যামাউন্ট ডলারে কনভার্ট করা (স্ট্রাইপ সেন্টে দেয়, তাই ১০০ দিয়ে ভাগ)
+    const amountPaid = session.amount_total ? session.amount_total / 100 : 0;
 
-  const subinfo ={
-    email: customerEmail,
-    planId: session.metadata.planId
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/update-status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        hiringId: targetId, 
+        paymentStatus: "paid",
+        sessionId: session_id,
+        clientEmail: customerEmail || "unknown@mail.com",
+        amount: amountPaid,
+        lawyerName: metadata?.lawyerName || "Verified Professional" // স্ট্রাইপ সেশনে পাস করা মেটাডাটা
+      }),
+    });
+    console.log(`🎉 Database successfully updated & paid record saved for ID: ${targetId}`);
+  } catch (dbError) {
+    console.error("Failed to update database on success page:", dbError);
   }
-  const res = await createScription(subinfo);
-  // console.log(res,"fbdfbd")
-// 
+}
   return (
     <section className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4 dark:bg-zinc-900">
       <div className="max-w-md w-full bg-white dark:bg-zinc-800 p-8 rounded-2xl shadow-xl text-center border border-gray-100 dark:border-zinc-700 animate-fade-in">
@@ -57,7 +70,7 @@ console.log(session_id)
           Payment Successful!
         </h1>
         <p className="text-gray-500 dark:text-zinc-400 mb-6">
-          Thank you for your purchase. Your subscription is now active!
+          Thank you for your purchase. Your payment has been processed successfully!
         </p>
 
         {/* পেমেন্ট ইনফো বক্স */}
@@ -67,16 +80,17 @@ console.log(session_id)
           </p>
           <p className="text-gray-500 dark:text-zinc-400 text-xs leading-relaxed">
             A confirmation email and invoice have been sent. If you have any questions, please email{' '}
-            <a href="mailto:orders@example.com" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-              orders@example.com
+            {/* 🌟 এখানে ডাইনামিক lawyerEmail বসানো হলো */}
+            <a href={`mailto:${lawyerEmail}`} className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+              {lawyerEmail}
             </a>.
           </p>
         </div>
 
-        {/* ড্যাশবোর্ড বা হোমে যাওয়ার বাটন */}
+        {/* ড্যাশবোর্ড বা হোমে যাওয়ার বাটন */}
         <div className="space-y-3">
           <Link 
-            href="/dashboard" 
+            href="/dashbroad/user/hiring-history" 
             className="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-md shadow-indigo-600/20"
           >
             Go to Dashboard

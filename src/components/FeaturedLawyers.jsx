@@ -10,7 +10,7 @@ export default function FeaturedLawyers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/featured-lawyers")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/featured-lawyers`)
       .then((res) => res.json())
       .then((data) => {
         setLawyers(data);

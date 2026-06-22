@@ -12,13 +12,19 @@ export const auth = betterAuth({
   },
 user: {
     additionalFields: {
-      role: {
-        type: "string",
-        required: false,
+      userRole: {
+       
+      
         defaultValue: "user",
       },
     },
   },
+   socialProviders: {
+        google: { 
+            clientId: process.env.GOOGLE_CLIENT_ID , 
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET , 
+        }, 
+    },
    plugins : [
     admin()
   ],

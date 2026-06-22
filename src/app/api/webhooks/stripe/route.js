@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { stripe }        from '@/lib/stripe'
 
 // CRITICAL: disable body parsing — Stripe needs raw bytes to verify the signature
-export const config = { api: { bodyParser: false } }
+// export const config = { api: { bodyParser: false } }
 
 export async function POST(req) {
   const body      = await req.text()                       // raw string, NOT JSON

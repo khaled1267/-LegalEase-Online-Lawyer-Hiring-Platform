@@ -16,7 +16,7 @@ export default function LawyerHiringHistory({ loggedInLawyerEmail }) {
     }
 
     setLoading(true);
-    fetch(`http://localhost:5000/hirings/lawyer?email=${loggedInLawyerEmail}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/hirings/lawyer?email=${loggedInLawyerEmail}`)
       .then((res) => res.json())
       .then((data) => {
         setRequests(data);
@@ -31,7 +31,7 @@ export default function LawyerHiringHistory({ loggedInLawyerEmail }) {
   // 🛠️ ২. এই ফাংশনটি মিসিং ছিল - স্ট্যাটাস (Accept / Reject) আপডেট করার হ্যান্ডলার
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/hirings/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hirings/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus })

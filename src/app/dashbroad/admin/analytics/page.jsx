@@ -6,7 +6,7 @@ export default function AnalyticsOverview() {
   const [stats, setStats] = useState({ totalUsers: 0, totalLawyers: 0, totalHires: 0, totalRevenue: 0 });
 
   useEffect(() => {
-    fetch("http://localhost:5000/admin-analytics")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin-analytics`)
       .then((res) => res.json())
       .then((data) => setStats(data))
       .catch((err) => console.error(err));

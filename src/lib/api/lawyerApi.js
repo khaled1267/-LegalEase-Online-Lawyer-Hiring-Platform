@@ -1,13 +1,18 @@
-// এই ফাংশনটি ব্যাকএন্ড থেকে লইয়ারদের ডেটা ফেচ করে নিয়ে আসবে
-export async function fetchLawyers() {
+export const fetchLawyers = async (filters = {}) => {
   try {
-    const res = await fetch("http://localhost:5000/services");
-    if (!res.ok) {
-      throw new Error("Failed to fetch lawyers data");
-    }
+    const search = filters.search || "";
+    const page = filters.page || "1";
+
+    // cache: "no-store" দেওয়া হয়েছে যেন টাইপ করার সাথে সাথে ফ্রেশ ডাটা আসে
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/lawyers?search=${search}&page=${page}`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) return { lawyers: [], total: 0 };
     return await res.json();
   } catch (error) {
-    console.error("Error fetching lawyers:", error);
-    throw error; // কম্পোনেন্টে এরর হ্যান্ডেল করার জন্য আবার থ্রো করা হলো
+    console.error("API Error:", error);
+    return { lawyers: [], total: 0 };
   }
-}
+};

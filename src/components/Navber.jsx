@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { signOut, useSession } from "@/lib/auth-client";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -168,19 +168,7 @@ const Navbar = () => {
                   />
                 )}
               </Link>
-              <Link
-                href="/plan"
-                className={`relative px-1 py-2 text-sm font-semibold tracking-wide transition-colors duration-300 ${pathname === "/plan" ? "text-amber-500" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"}`}
-              >
-                Pricing
-                {pathname === "/plan" && (
-                  <motion.div
-                    layoutId="premiumUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-500 to-amber-300"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-              </Link>
+             
             </nav>
 
             <span className="h-5 w-[1px] bg-slate-300 dark:bg-slate-800" />
