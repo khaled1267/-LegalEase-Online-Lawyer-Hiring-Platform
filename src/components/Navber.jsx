@@ -211,9 +211,23 @@ const Navbar = () => {
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center gap-2.5 bg-gradient-to-b from-slate-100 to-slate-200/60 dark:from-slate-900 dark:to-slate-950 hover:from-slate-200 dark:hover:from-slate-850 dark:hover:to-slate-900 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 border border-slate-300 dark:border-slate-800 shadow-sm dark:shadow-inner group"
                 >
-                  <div className="h-6 w-6 bg-amber-500/10 text-amber-500 dark:text-amber-400 rounded-md flex items-center justify-center font-bold text-xs uppercase border border-amber-500/20">
-                    {user?.name?.charAt(0) || "U"}
-                  </div>
+                  <div className="h-6 w-6 bg-amber-500/10 text-amber-500 dark:text-amber-400 rounded-md flex items-center justify-center font-bold text-xs uppercase border border-amber-500/20 overflow-hidden">
+  {user?.image ? (
+    <img 
+      src={user.image} 
+      alt={user?.name || "User Avatar"} 
+      className="h-full w-full object-cover"
+      onError={(e) => {
+        // যদি ইমেজ লোড হতে কোনো সমস্যা হয়, তবে ফলব্যাক হিসেবে টেক্সট দেখাবে
+        e.target.style.display = 'none';
+        e.target.nextSibling.style.display = 'block';
+      }}
+    />
+  ) : null}
+  <span style={{ display: user?.image ? 'none' : 'block' }}>
+    {user?.name?.charAt(0) || "U"}
+  </span>
+</div>
                   <span className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 group-hover:dark:text-white transition-colors">
                     Hi, {user?.name?.split(" ")[0]}
                   </span>
@@ -237,12 +251,12 @@ const Navbar = () => {
                           Role Account
                         </p>
                         <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-0.5 capitalize bg-amber-500/10 w-fit px-2 py-0.5 rounded-md border border-amber-500/20">
-                          {user?.role || "seeker"}
+                          {user?.userRole || "user"}
                         </p>
                       </div>
                       <div className="p-1.5">
                         <Link
-                          href={dashboardLinks[user?.role || "seeker"]}
+                          href={dashboardLinks[user?.userRole || "user"]}
                           onClick={() => setIsDropdownOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
                         >
@@ -346,13 +360,7 @@ const Navbar = () => {
               >
                 Browse Jobs
               </Link>
-              <Link
-                href="/plan"
-                onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${pathname === "/plan" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"}`}
-              >
-                Pricing
-              </Link>
+             
 
               {/* 💡 USER ACTIONS (MOBILE) */}
               {!isPending && session ? (
@@ -364,7 +372,7 @@ const Navbar = () => {
                     </span>
                   </div>
                   <Link
-                    href={dashboardLinks[user?.role || "seeker"]}
+                    href={dashboardLinks[user?.userRole || "user"]}
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
                   >

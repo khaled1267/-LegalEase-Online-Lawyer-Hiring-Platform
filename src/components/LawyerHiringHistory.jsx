@@ -30,6 +30,7 @@ export default function LawyerHiringHistory({ loggedInLawyerEmail }) {
 
   // 🛠️ ২. এই ফাংশনটি মিসিং ছিল - স্ট্যাটাস (Accept / Reject) আপডেট করার হ্যান্ডলার
   const handleStatusUpdate = async (id, newStatus) => {
+    
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hirings/${id}`, {
         method: "PATCH",

@@ -19,14 +19,14 @@ export default function ManageUsers() {
     if (!confirmChange) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/role/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/userRole/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: newRole }),
+        body: JSON.stringify({ userRole: newRole }),
       });
       if (res.ok) {
         alert("🎉 Role updated!");
-        setUsers(users.map((u) => (u._id === id ? { ...u, role: newRole } : u)));
+        setUsers(users.map((u) => (u._id === id ? { ...u, userRole: newRole } : u)));
       }
     } catch (err) {
       console.error(err);
@@ -69,12 +69,12 @@ export default function ManageUsers() {
                 <td className="p-4 text-gray-500">{user.email}</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${user.role === 'admin' ? 'bg-rose-50 text-rose-600' : 'bg-green-50 text-green-600'}`}>
-                    {user.role}
+                    {user.userRole}
                   </span>
                 </td>
                 <td className="p-4 text-right space-x-2">
                   <button
-                    onClick={() => handleRoleChange(user._id, user.role)}
+                    onClick={() => handleRoleChange(user._id, user.userRole)}
                     className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 text-xs font-semibold"
                   >
                     <UserCheck size={14} /> Change Role

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { User, Clock, Check, Star, Shield, Briefcase, Award, MessageSquare, Send } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState([]); // ডাটাবেজ এবং রিয়েল-টাইম কমেন্ট লিস্ট
 
-  console.log("Client Side Received - Email:", clientEmail, "Name:", clientName, "Lawyer:", lawyer);
+  // console.log("Client Side Received - Email:", clientEmail, "Name:", clientName, "Lawyer:", lawyer);
 
   // 🔄 💡 নতুন সংযোজন: পেজ লোড হওয়ার সাথে সাথে এই লইয়ারের সব পুরোনো কমেন্ট ডাটাবেজ থেকে আনা
   useEffect(() => {
@@ -25,6 +26,9 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
 
   // ১. কনফার্ম হায়ার হ্যান্ডলার
   const handleConfirmHire = async (e) => {
+    const{data:token}=await authClient.token();
+  console.log(token);
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -44,7 +48,10 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hirings`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+          authorization: `Bearer ${token.token}`,
+         },
+
         body: JSON.stringify(hiringData),
       });
 
@@ -64,6 +71,8 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
 
   // ২. কমেন্ট সাবমিট হ্যান্ডলার
   const handleCommentSubmit = async (e) => {
+    const{data:token}=await authClient.token();
+  console.log(token);
     e.preventDefault();
     if (!commentInput.trim()) return;
 
@@ -79,7 +88,9 @@ export default function LawyerDetails({ lawyer, clientEmail, clientName }) {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+         },
         body: JSON.stringify(commentData),
       });
 

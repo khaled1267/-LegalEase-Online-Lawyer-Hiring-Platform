@@ -1,4 +1,5 @@
 import LawyerDetails from "@/components/LawyerDetailsPage";
+import { authClient } from "@/lib/auth-client";
 import { getUserSession } from "@/lib/core/sesson";
 
 // ১. পেজটিকে async করুন যেন await ব্যবহার করা যায়
@@ -7,12 +8,19 @@ export default async function LawyerDetailsPage({ params: paramsPromise }) {
   const params = await paramsPromise;
   const id = params.id;
 
-  // ২. সার্ভার সাইড থেকে লগইন করা ইউজারের সেশন রিড করা
   const session = await getUserSession();
-  console.log("Logged In User Session:", session);
+
+// টার্মিনালে পুরো অবজেক্টটি দেখতে পাবেন
+// console.log("Full Session Data:", JSON.stringify(session, null, 2));
+
+// আপনার লাইব্রেরির স্ট্রাকচার অনুযায়ী নিচের যেকোনো একটি কাজ করবে:
+const token = session?.accessToken || session?.token || session?.session?.token;
+
+// console.log("My Real Token:", token);
 
   // ৩. ব্যাকএন্ড থেকে লইয়ারের ডাটা ফেচ করা
   let lawyer = null;
+ 
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${id}`, {
       cache: "no-store", // রিয়েল-টাইম ডাটার জন্য ক্যাশ অফ রাখা ভালো

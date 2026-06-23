@@ -1,4 +1,7 @@
+
 export const fetchLawyers = async (filters = {}) => {
+
+  
   try {
     const search = filters.search || "";
     const page = filters.page || "1";

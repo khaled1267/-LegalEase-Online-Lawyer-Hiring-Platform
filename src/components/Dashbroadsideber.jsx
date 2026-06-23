@@ -63,7 +63,7 @@ export default async function Navigation() {
   };
 
   // ইউজারের রোল অনুযায়ী ডাইনামিকালি মেনু সিলেক্ট হবে (সার্ভারেই)
-  const navItems = navLinksMap[user?.role || "user"];
+  const navItems = navLinksMap[user?.userRole || "user"];
 
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-25 border-r border-zinc-800 bg-zinc-950 p-6 z-40">
