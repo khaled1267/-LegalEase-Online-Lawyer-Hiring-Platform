@@ -1,29 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { updateUserProfile, uploadImageToImgBB } from "@/lib/api/userApi";
-// 💡 lib ফোল্ডার থেকে ফাংশনগুলো ইমপোর্ট করছি
+import { uploadImageToImgBB } from "@/lib/api/userApi";
+import { authClient, useSession } from "@/lib/auth-client"; // আপনার প্রোজেক্টের পাথ অনুযায়ী 
 
-
-export default function UpdateProfile({userEmail}) {
-    console.log(userEmail);
+export default function UpdateProfile() {
   const router = useRouter();
   
-  // 💡 বাস্তব প্রোজেক্টে এই ইমেইলটি আপনার Auth Context বা Session থেকে আসবে
-//   const userEmail = "user@example.com"; 
+  // 💡 refetch ফাংশনটি ইমপোর্ট করুন যা Better Auth এর সেশন আপডেট করতে সাহায্য করবে
+  const { data: session, isPending: sessionLoading, refetch } = useSession();
 
-  const [fullName, setFullName] = useState();
-  const [profilePic, setProfilePic] = useState();
+  const [fullName, setFullName] = useState("");
+  const [profilePic, setProfilePic] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ইমেজ সিলেক্ট করলে প্রিভিউ দেখানোর জন্য
+  // সেশন থেকে ডেটা লোড করা
+  useEffect(() => {
+    if (session?.user) {
+      setFullName(session.user.name || "");
+      setProfilePic(session.user.image || "");
+    }
+  }, [session]);
+
+  // ইমেজ সিলেক্ট প্রিভিউ
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      setProfilePic(URL.createObjectURL(file)); // অস্থায়ী প্রিভিউ URL
+      setProfilePic(URL.createObjectURL(file)); 
     }
   };
 
@@ -35,7 +41,7 @@ export default function UpdateProfile({userEmail}) {
     try {
       let finalImageUrl = profilePic;
 
-      // 1️⃣ ইউজার নতুন ছবি সিলেক্ট করলে lib-এর ফাংশন দিয়ে আপলোড হবে
+      // ১. নতুন ইমেজ থাকলে ImgBB তে আপলোড করা
       if (selectedFile) {
         const uploadedUrl = await uploadImageToImgBB(selectedFile);
         if (uploadedUrl) {
@@ -47,17 +53,22 @@ export default function UpdateProfile({userEmail}) {
         }
       }
 
-      // 2️⃣ এবার lib-এর ফাংশন দিয়ে ব্যাকএন্ডে ডেটা আপডেট করা হচ্ছে
-      const data = await updateUserProfile(userEmail, {
-        fullName: fullName,
-        profilePicture: finalImageUrl,
+      // ২. Better Auth দিয়ে নাম ও ইমেজ একসাথে ডাটাবেজে আপডেট
+      const { data, error } = await authClient.updateUser({
+        name: fullName,       
+        image: finalImageUrl  
       });
 
-      if (data.success) {
-        alert("Profile updated successfully!");
-        router.push("/dashbroad/user/update-profile"); // স্পেলিং ফিক্সড: dashbroad -> dashboard
+      if (error) {
+        alert(error.message || "Failed to update profile");
       } else {
-        alert(data.message || "Failed to update profile");
+        alert("Profile updated successfully!");
+        
+        // 💡 সবচেয়ে গুরুত্বপূর্ণ পার্ট: Better Auth সেশন নতুন করে রিফেচ করা
+        await refetch(); 
+        
+        // এরপর রাউটার রিফ্রেশ করা
+        router.refresh(); 
       }
 
     } catch (error) {
@@ -68,6 +79,14 @@ export default function UpdateProfile({userEmail}) {
     }
   };
 
+  if (sessionLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <p className="text-gray-500 font-medium">Loading profile information...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
@@ -75,7 +94,11 @@ export default function UpdateProfile({userEmail}) {
           Update Profile
         </h2>
 
-        <h1>userEmail:{userEmail}</h1>
+        {session?.user && (
+          <p className="text-sm text-center text-gray-500 mb-4">
+            User Email: {session.user.email}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Profile Picture Section */}
@@ -83,7 +106,7 @@ export default function UpdateProfile({userEmail}) {
             <div className="relative w-24 h-24">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={profilePic}
+                src={profilePic || "https://images.remotehub.com/830a6c60ca2111eaa5ff97193f538cb3?width=180&height=180&fit=crop"}
                 alt="Profile Preview"
                 className="w-full h-full rounded-full object-cover border-4 border-indigo-50"
               />
@@ -119,7 +142,7 @@ export default function UpdateProfile({userEmail}) {
           <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
             <button
               type="button"
-              onClick={() => router.push("/dashbroad/user/update-profile")} // স্পেলিং ফিক্সড
+              onClick={() => router.push("/dashboard/user/update-profile")}
               className="px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               Cancel

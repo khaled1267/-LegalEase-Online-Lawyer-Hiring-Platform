@@ -34,35 +34,35 @@ export default function Register() {
 
     const formData = new FormData(e.currentTarget);
     const registerData = Object.fromEntries(formData.entries());
-
+console.log(registerData);
     const password = registerData.password;
     const confirmPassword = registerData.confirmPassword;
 
-    // validation
-    // if (password !== confirmPassword) {
-    //   toast.error("Passwords do not match!");
-    //   setLoading(false);
-    //   return;
-    // }
+   
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      setLoading(false);
+      return;
+    }
 
-    // if (password.length < 6) {
-    //   toast.error("Password must be at least 6 characters long!");
-    //   setLoading(false);
-    //   return;
-    // }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long!");
+      setLoading(false);
+      return;
+    }
 
-    // if (!/[A-Z]/.test(password)) {
-    //   toast.error("Password must include uppercase letter!");
-    //   setLoading(false);
-    //   return;
-    // }
+    if (!/[A-Z]/.test(password)) {
+      toast.error("Password must include uppercase letter!");
+      setLoading(false);
+      return;
+    }
 
-    // if (!/[a-z]/.test(password)) {
-    //   toast.error("Password must include lowercase letter!");
-    //   setLoading(false);
-    //   return;
-    // }
-    // console.log("inside tryjkvhgjk block");
+    if (!/[a-z]/.test(password)) {
+      toast.error("Password must include lowercase letter!");
+      setLoading(false);
+      return;
+    }
+    console.log("inside tryjkvhgjk block");
     try {
       // console.log("inside try block");
       await authClient.signUp.email({
@@ -80,7 +80,8 @@ export default function Register() {
       toast.success("Registration successful! 🎉");
 
       router.push("/");
-      router.refresh();
+      // router.refresh();
+      window.location.reload();
     } catch (err) {
       console.error(err);
 
