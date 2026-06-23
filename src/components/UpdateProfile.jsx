@@ -24,7 +24,7 @@ export default function UpdateProfile() {
     }
   }, [session]);
 
-  // ইমেজ সিলেক্ট প্রিভিউ
+  // ইমেজ সিলেক্ট প্রিভিউ can de solvers
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
