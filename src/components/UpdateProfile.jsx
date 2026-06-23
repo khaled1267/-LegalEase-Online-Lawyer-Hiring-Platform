@@ -13,8 +13,8 @@ export default function UpdateProfile({userEmail}) {
   // 💡 বাস্তব প্রোজেক্টে এই ইমেইলটি আপনার Auth Context বা Session থেকে আসবে
 //   const userEmail = "user@example.com"; 
 
-  const [fullName, setFullName] = useState("John Doe");
-  const [profilePic, setProfilePic] = useState("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80");
+  const [fullName, setFullName] = useState();
+  const [profilePic, setProfilePic] = useState();
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
