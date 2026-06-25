@@ -1,11 +1,15 @@
+import UserDashboardHome from '@/components/UserDashboardHome';
+import { getUserSession } from '@/lib/core/sesson';
 import React from 'react';
 
-const Userpage = () => {
-    return (
-        <div>
-            <h1>User page</h1>
-        </div>
-    );
+const Userhomepage = async () => {
+  const user = await getUserSession();
+   console.log("clientEmaijnijnl", user);
+  return (
+    <div>
+      <UserDashboardHome clientEmail={user?.email} />
+    </div>
+  );
 };
 
-export default Userpage;
+export default Userhomepage;

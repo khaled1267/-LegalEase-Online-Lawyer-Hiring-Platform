@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Briefcase, Clock, DollarSign, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-// 👤 এখানে 'user' অবজেক্ট প্রপস হিসেবে রিসিভ করছি যার ভেতর name এবং email দুটোই আছে
-export default function UserDashboardHome({ user }) {
+export default function UserDashboardHome({ clientEmail }) {
+    // console.log("clientEmail", clientEmail);
   const [stats, setStats] = useState({
     totalHires: 0,
     pendingHires: 0,
@@ -14,20 +14,19 @@ export default function UserDashboardHome({ user }) {
   const [recentRequests, setRecentRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // সেফটি চেক এর জন্য ভ্যারিয়েবল আলাদা করে নেওয়া
-  const clientEmail = user?.email;
-  const clientName = user?.name || "User";
-
   useEffect(() => {
     if (clientEmail) {
       setLoading(true);
       
+      // ১. hirings কালেকশন থেকে ডাটা ফেচ করা
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/hirings?email=${clientEmail}`)
         .then((res) => res.json())
         .then((hiringData) => {
+          // টোটাল হায়ার এবং পেন্ডিং ক্যালকুলেট করা
           const total = hiringData.length;
           const pending = hiringData.filter(req => req.status === "Pending").length;
           
+          // পেইড পেমেন্টের টোটাল অ্যামাউন্ট যোগ করা
           const spent = hiringData
             .filter(req => req.paymentStatus === "paid")
             .reduce((sum, req) => sum + parseFloat(req.fee || 0), 0);
@@ -38,6 +37,7 @@ export default function UserDashboardHome({ user }) {
             totalSpent: spent
           });
 
+          // শেষ ৩টি রিকোয়েস্ট রিসেন্ট লিস্টে দেখানোর জন্য রাখা
           setRecentRequests(hiringData.slice(0, 3));
           setLoading(false);
         })
@@ -61,8 +61,7 @@ export default function UserDashboardHome({ user }) {
       {/* হেডার / গ্রিটিংস সেকশন */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          {/* ✅ এখন এখানে সুন্দরভাবে ডায়নামিক নাম দেখাবে */}
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Welcome Back! 👋 {clientName}</h1>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Welcome Back! 👋  {clientEmail}</h1>
           <p className="text-sm text-gray-500 mt-1">Manage your consultations, track requests, and handle payments smoothly.</p>
         </div>
         <Link 
@@ -73,8 +72,10 @@ export default function UserDashboardHome({ user }) {
         </Link>
       </div>
 
-      {/* 📊 Stats Cards Section */}
+      {/* 📊 ১. Stats Cards Section */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+        
+        {/* কার্ড ১: মোট হায়ার */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Lawyers Hired</p>
@@ -86,6 +87,7 @@ export default function UserDashboardHome({ user }) {
           </div>
         </div>
 
+        {/* কার্ড ২: পেন্ডিং রিকোয়েস্ট */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Awaiting Response</p>
@@ -97,6 +99,7 @@ export default function UserDashboardHome({ user }) {
           </div>
         </div>
 
+        {/* কার্ড ৩: মোট খরচ */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money Paid</p>
@@ -109,9 +112,10 @@ export default function UserDashboardHome({ user }) {
             <DollarSign size={22} />
           </div>
         </div>
+
       </div>
 
-      {/* 🕒 Recent Activities Table */}
+      {/* 🕒 ২. Recent Activities Table */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-black text-gray-900">Recent Hiring Activity</h2>
@@ -163,3 +167,4 @@ export default function UserDashboardHome({ user }) {
     </div>
   );
 }
+

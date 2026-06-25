@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import React, { useState, useEffect, useTransition } from "react";
+import { Search, SlidersHorizontal, Loader2, Star, Briefcase, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LawyerListingContainer({ lawyersData, filter }) {
-  const [searchTerm, setSearchTerm] = useState(filter.search || "");
-  const [page, setPage] = useState(Number(filter.page) || 1);
-  const [dummyMaxFee, setDummyMaxFee] = useState(1000);
-
   const router = useRouter();
-  
+  const [isPending, startTransition] = useTransition();
+
+  const [searchTerm, setSearchTerm] = useState(filter.search || "");
+  const [maxFee, setMaxFee] = useState(Number(filter.maxFee) || 1000);
+  const [page, setPage] = useState(Number(filter.page) || 1);
+
   const lawyersList = lawyersData?.lawyers || [];
   const totalItems = Number(lawyersData?.total) || 0;
   
-  // 🌟 ব্যাকএন্ডের লিমিটের সাথে মিলিয়ে এখানে ৩ দেওয়া হয়েছে টেস্ট করার জন্য
   const itemsPerPage = 3; 
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
@@ -34,44 +34,38 @@ export default function LawyerListingContainer({ lawyersData, filter }) {
     return pages;
   };
 
-  // 🌟 ইউআরএল সিঙ্ক এবং ফোর্স রিফ্রেশ লজিক
   useEffect(() => {
     const sp = new URLSearchParams();
-    
-    if (searchTerm.trim() !== "") {
-      sp.set("search", searchTerm);
-    }
-    if (page > 1) {
-      sp.set("page", page.toString());
-    }
+    if (searchTerm.trim() !== "") sp.set("search", searchTerm);
+    if (maxFee < 1000) sp.set("maxFee", maxFee.toString());
+    if (page > 1) sp.set("page", page.toString());
 
     const query = sp.toString();
     const path = query ? `?${query}` : "/browse-lawyer";
     
-    router.push(path);
-    
-    // 🔥 এটি নিশ্চিত করবে যেন পেজ ২ বা নেক্সটে ক্লিক করলে ডাটা সাথে সাথে স্ক্রিনে চেঞ্জ হয়
-    setTimeout(() => {
-      router.refresh();
-    }, 100);
-
-  }, [searchTerm, page, router]);
+    startTransition(() => {
+      router.push(path, { scroll: false });
+    });
+  }, [searchTerm, maxFee, page, router]);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-900">
+    <div className="max-w-7xl mx-auto p-6 min-h-screen bg-slate-50/50 text-slate-900 font-sans">
       
-      <header className="text-center max-w-2xl mx-auto mb-12 mt-6">
-        <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
+      <header className="text-center max-w-2xl mx-auto mb-12 mt-8">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 uppercase">
           Browse Verified Lawyers
         </h1>
+        <p className="text-sm text-slate-500 mt-2 tracking-wide font-medium">
+          Find top-tier legal professionals tailored to your requirements
+        </p>
       </header>
 
-      {/* 🎛️ ফিল্টার প্যানেল */}
-      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        {/* সার্চ */}
-        <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Search size={14} /> Search Lawyer
+      {/* 🎛️ Premium Filter Panel */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl shadow-slate-100/50 mb-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        {/* Search */}
+        <div className="relative">
+          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5 flex items-center gap-2">
+            <Search size={13} className="text-indigo-500" /> Search Lawyer
           </label>
           <input
             type="text"
@@ -81,65 +75,99 @@ export default function LawyerListingContainer({ lawyersData, filter }) {
               setSearchTerm(e.target.value); 
               setPage(1); 
             }}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400"
           />
         </div>
 
-        {/* স্লাইডার */}
+        {/* Hourly Rate Slider */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-              <SlidersHorizontal size={14} /> Max Hourly Rate
+          <div className="flex justify-between items-center mb-2.5">
+            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <SlidersHorizontal size={13} className="text-indigo-500" /> Max Hourly Rate
             </label>
-            <span className="text-indigo-600 font-extrabold text-sm bg-indigo-50 px-2 py-0.5 rounded-md">${dummyMaxFee}/hr</span>
+            <span className="text-slate-900 font-bold text-xs bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/60">${maxFee}/hr</span>
           </div>
           <input
             type="range"
             min="0"
             max="1000"
             step="10"
-            value={dummyMaxFee}
-            onChange={(e) => setDummyMaxFee(Number(e.target.value))}
-            className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+            value={maxFee}
+            onChange={(e) => {
+              setMaxFee(Number(e.target.value));
+              setPage(1);
+            }}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
           />
         </div>
       </div>
 
-      {/* কাউন্টার */}
-      <div className="mb-6 text-sm text-zinc-500 font-medium">
-        Showing {startItem}-{endItem} of {totalItems} professionals
+      {/* Info & Status Bar */}
+      <div className="mb-6 flex items-center justify-between text-xs text-slate-400 font-bold tracking-wider uppercase">
+        <div>Showing {startItem}-{endItem} of {totalItems} professionals</div>
+        {isPending && (
+          <div className="flex items-center gap-1.5 text-indigo-600 normal-case font-medium">
+            <Loader2 size={14} className="animate-spin" /> Fetching updates...
+          </div>
+        )}
       </div>
 
-      {/* কার্ড গ্রিড */}
+      {/* 🌟 Luxury Grid Layout */}
       {lawyersList.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {lawyersList.map((lawyer, index) => (
-              <div key={lawyer._id || index} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col justify-between">
+              <div 
+                key={lawyer._id || index} 
+                className="group relative bg-white rounded-2xl border border-slate-100 p-4 shadow-md shadow-slate-100/40 flex flex-col justify-between overflow-hidden hover:shadow-xl hover:border-slate-200/80 transition-all duration-300"
+              >
+                {/* 🌟 Premium Ribbon Badge (Like the image reference) */}
+                {lawyer.isBusy && (
+                  <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden z-20 pointer-events-none">
+                    <div className="absolute top-3 -right-5 w-20 bg-gradient-to-r from-rose-500 to-red-600 text-white text-[9px] font-black uppercase tracking-widest text-center py-1 rotate-45 shadow-sm border-b border-white/20">
+                      Busy
+                    </div>
+                  </div>
+                )}
+
                 <div>
-                  <div className="relative w-full h-56 rounded-xl overflow-hidden bg-gray-100">
+                  {/* Photo Container */}
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden bg-slate-100 border border-slate-100">
                     <img 
                       src={lawyer.image || "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600"} 
                       alt={lawyer.name} 
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
-                  <div className="mt-5 space-y-2.5">
-                    <span className="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-md inline-block">
-                      {lawyer.specialization}
-                    </span>
-                    <h2 className="text-xl font-bold text-gray-900">{lawyer.name}</h2>
-                    <p className="text-gray-600 text-sm line-clamp-3">{lawyer.bio}</p>
+
+                  {/* Body Info */}
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                      <Briefcase size={10} className="text-slate-400" />
+                      <span>{lawyer.specialization}</span>
+                    </div>
+                    
+                    <h2 className="text-base font-bold text-slate-900 tracking-tight line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                      {lawyer.name}
+                    </h2>
+                    
+                    <p className="text-slate-500 text-xs font-normal leading-relaxed line-clamp-2">
+                      {lawyer.bio || "Experienced legal counsel providing bespoke representation and corporate advisory services."}
+                    </p>
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-50">
+
+                {/* Footer Section */}
+                <div className="mt-5 pt-3.5 border-t border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex flex-col">
-                    <span className="text-xs text-gray-400 uppercase font-semibold">Hourly Rate</span>
-                    <span className="font-extrabold text-2xl text-gray-900">${lawyer.fee || lawyer.Fee || 0}</span>
+                    <span className="text-[9px] text-slate-400 uppercase font-extrabold tracking-widest">Hourly Rate</span>
+                    <span className="font-black text-xl text-slate-900">${lawyer.fee || lawyer.Fee || 0}</span>
                   </div>
-                  <Link href={`/browse-lawyer/${lawyer._id}`}>
-                    <button className="bg-gray-950 text-white text-sm px-4 py-2.5 rounded-xl hover:bg-indigo-600 transition-all">
-                      View Details
+                  
+                  <Link href={`/browse-lawyer/${lawyer._id}`} className="w-full sm:w-auto">
+                    <button className="w-full bg-slate-900 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-1 hover:bg-indigo-600 shadow-sm group-hover:shadow">
+                      Details <ArrowRight size={12} className="opacity-70 group-hover:translate-x-0.5 transition-transform" />
                     </button>
                   </Link>
                 </div>
@@ -147,25 +175,25 @@ export default function LawyerListingContainer({ lawyersData, filter }) {
             ))}
           </div>
 
-          {/* 🌟 কাস্টম প্যাগিনেশন কন্ট্রোল */}
-          <div className="w-full flex justify-center mt-8">
-            <div className="flex gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+          {/* Luxury Pagination Controls */}
+          <div className="w-full flex justify-center mt-12">
+            <div className="flex gap-1.5 bg-white p-2 rounded-xl shadow-md border border-slate-100">
               <button 
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-50 hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 cursor-pointer transition-colors"
               >
                 Prev
               </button>
               {getPageNumbers().map((p, i) => (
                 p === "ellipsis" ? (
-                  <span key={`ell-${i}`} className="px-3 py-2 text-gray-400">...</span>
+                  <span key={`ell-${i}`} className="px-2.5 py-1.5 text-slate-400 text-xs font-bold">...</span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${
-                      p === page ? "bg-indigo-600 text-white" : "bg-gray-50 hover:bg-gray-100"
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      p === page ? "bg-slate-900 text-white shadow-sm" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
                     {p}
@@ -175,7 +203,7 @@ export default function LawyerListingContainer({ lawyersData, filter }) {
               <button 
                 disabled={page === totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-50 hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 cursor-pointer transition-colors"
               >
                 Next
               </button>
@@ -183,8 +211,8 @@ export default function LawyerListingContainer({ lawyersData, filter }) {
           </div>
         </>
       ) : (
-        <div className="text-center py-20 border border-dashed rounded-[32px] bg-white text-zinc-500">
-          No lawyers match criteria.
+        <div className="text-center py-24 border border-dashed border-slate-200 rounded-[32px] bg-white text-slate-400 font-semibold text-sm tracking-wide">
+          No legal professionals found matching your specific filters.
         </div>
       )}
     </div>

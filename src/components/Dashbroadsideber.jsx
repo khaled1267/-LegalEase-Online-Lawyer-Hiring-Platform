@@ -13,6 +13,7 @@ import {
   CreditCard,
   Users,
   Building,
+  BadgeDollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { getUserSession } from "@/lib/core/sesson";
@@ -29,11 +30,13 @@ export default async function Navigation() {
    
     { icon: FileUser, href: "/dashbroad/user/comments", label: "Comments" },
     { icon: PersonStanding, href: "/dashbroad/user/update-profile", label: "Update Profile" },
+    { icon: BadgeDollarSign, href: "/dashbroad/user/payment", label: "Transaction History" },
+
     // { icon: Settings2, href: "/settings", label: "Settings" },
   ];
 
   const lawyerNavLinks = [
-    { icon: House, href: "/dashbroad/lawyer", label: "dashbroad" },
+    { icon: House, href: "/dashbroad/lawyer", label: "Home" },
     {
       icon: MagnetIcon,
       href: "/dashbroad/lawyer/lawerhireinghistory",
@@ -45,7 +48,7 @@ export default async function Navigation() {
       href: "/dashbroad/lawyer/manage-legal-profile",
       label: "profile",
     },
-    { icon: CreditCard, href: "/dashbroad/lawyer/billing", label: "Billing" },
+    { icon: CreditCard, href: "/dashbroad/lawyer/prayment", label: "Billing" },
   ];
 
     const adminNavLinks = [

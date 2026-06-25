@@ -8,7 +8,7 @@ export default function GlobalLoading() {
   const skeletonCards = [1, 2, 3];
 
   return (
-    <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6 space-y-12">
+    <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center mt-44 p-6 space-y-12">
       
       {/* 🌀 ১. প্রিমিয়াম গ্লোবাল স্পিনার সেকশন */}
       <div className="flex flex-col items-center space-y-4">
